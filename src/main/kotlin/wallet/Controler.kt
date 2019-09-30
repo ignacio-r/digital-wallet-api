@@ -42,4 +42,39 @@ class Controler {
         }
     }
 
+    fun cashin(cashInWrapper: CashInWrapper): Any? {
+        return null
+    }
+
+    fun getMovimientos(cvu: String): MutableList<Transactional>? {
+        try{
+              val account: Account = digitalWallet.accountByCVU(cvu)
+              return account.transactions
+        }catch (error: Error){
+            print(error)
+        }
+        return null
+    }
+
+    fun borrarUsuarioPorCVU(cvu: String): Boolean {
+        try{
+            val account: Account = digitalWallet.accountByCVU(cvu)
+            digitalWallet.deleteUser(account.user)
+            return true
+        }catch (error: Error){
+            print(error)
+        }
+        return false
+    }
+
+    fun balancePorCVU(cvu: String): Double? {
+        try{
+            val account: Account = digitalWallet.accountByCVU(cvu)
+            return account.balance
+        }catch (error: Error){
+            print(error)
+        }
+        return null
+    }
+
 }

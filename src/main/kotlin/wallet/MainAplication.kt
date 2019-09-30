@@ -36,13 +36,52 @@ fun main() {
         val nuevaTransferencia = controler.transfer(transferWrapper)
         if(nuevaTransferencia){
             ctx.status(200)
+            ctx.json(transferWrapper.fromCVU)
         }else{
             ctx.status(400)
             ctx.json("Transferencia fallida")
         }
     }
-    app.post("/"){ctx->
+    app.post("/cashin"){ctx->
+        val cashInWrapper: CashInWrapper = ctx.body<CashInWrapper>()
+        val cashIn = controler.cashin(cashInWrapper)
 
+    }
+
+    app.get("/transaccions/:cvu"){ctx ->
+        val cvu = ctx.pathParam("cvu")
+        val movientos = controler.getMovimientos(cvu)
+        if(movientos != null){
+            ctx.status(200)
+            ctx.json(movientos)
+        }else{
+            ctx.status(404)
+            ctx.json("CVU incorrecto")
+        }
+    }
+
+    app.delete("/users/:cvu"){ctx ->
+        val cvu = ctx.pathParam("cvu")
+        val usuarioEliminadoConExito = controler.borrarUsuarioPorCVU(cvu)
+        if(usuarioEliminadoConExito){
+            ctx.status(200)
+            ctx.json("xd")
+        }else{
+            ctx.status(404)
+            ctx.json("CVU incorrecto")
+        }
+    }
+
+    app.get("/account/:cvu"){ctx ->
+        val cvu = ctx.pathParam("cvu")
+        val balanceRecuperado = controler.balancePorCVU(cvu)
+        if(balanceRecuperado != null){
+            ctx.status(200)
+            ctx.json(balanceRecuperado)
+        }else{
+            ctx.status(404)
+            ctx.json("CVU incorrecto")
+        }
     }
         app.get("/") { ctx -> ctx.result("Hello World")
         }
