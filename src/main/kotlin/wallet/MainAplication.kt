@@ -31,6 +31,19 @@ fun main() {
         }
 
     }
+    app.post("/transfer"){ctx ->
+        val transferWrapper: TransferWrapper = ctx.body<TransferWrapper>()
+        val nuevaTransferencia = controler.transfer(transferWrapper)
+        if(nuevaTransferencia){
+            ctx.status(200)
+        }else{
+            ctx.status(400)
+            ctx.json("Transferencia fallida")
+        }
+    }
+    app.post("/"){ctx->
+
+    }
         app.get("/") { ctx -> ctx.result("Hello World")
         }
 

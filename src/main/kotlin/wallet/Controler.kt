@@ -32,4 +32,14 @@ class Controler {
         return null
     }
 
+    fun transfer(transferWrapper: TransferWrapper): Boolean {
+        try{
+            digitalWallet.transfer(transferWrapper.fromCVU, transferWrapper.toCVU, transferWrapper.amount.toDouble())
+            return true
+        }catch (error: Error){
+            print(error)
+            return false
+        }
+    }
+
 }
