@@ -2,6 +2,13 @@ package wallet
 
 import io.javalin.Javalin
 import io.javalin.http.BadRequestResponse
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+
+fun checkAllParams(asd: Any): Boolean {
+    val props = asd::class.memberProperties as List<KProperty1<Any, *>>
+    return props.all { prop -> prop.get(asd).toString().trim() != "" }
+}
 
 fun main() {
     val app = Javalin.create().start(7000)
@@ -14,7 +21,9 @@ fun main() {
 
     app.post("login") { ctx ->
         //Falta encriptar la password y el return esta medio falopa
-        val loginWrapper: LoginWrapper = ctx.body<LoginWrapper>()
+        val loginWrapper: LoginWrapper = ctx.bodyValidator<LoginWrapper>()
+            .check({ checkAllParams(it)})
+            .get()
         val userWrapper = service.login(loginWrapper)
         if (userWrapper != null) {
             ctx.status(200)
@@ -28,13 +37,7 @@ fun main() {
     app.post("register") { ctx ->
         var registerWrapper: RegisterWrapper = ctx.body<RegisterWrapper>()
         registerWrapper = ctx.bodyValidator<RegisterWrapper>()
-            .check({
-                it.email.trim() != ""
-                        && it.firstName.trim() != ""
-                        && it.lastName.trim() != ""
-                        && it.password.trim() != ""
-                        && it.idCard.trim() != ""
-            })
+            .check({ checkAllParams(it) })
             .get()
         val nuevoUsuario = service.register(registerWrapper)
         if (nuevoUsuario != null) {
@@ -57,6 +60,7 @@ fun main() {
             ctx.json("Transferencia fallida")
         }
     }
+
     app.post("/cashin") { ctx ->
         val cashInWrapper: CashInWrapper = ctx.body<CashInWrapper>()
         val cashIn = service.cashin(cashInWrapper)
