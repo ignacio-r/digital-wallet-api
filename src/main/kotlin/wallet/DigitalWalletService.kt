@@ -2,23 +2,30 @@ package wallet
 
 import data.DigitalWalletData
 
-class Controler {
+class DigitalWalletService {
     val digitalWallet = DigitalWalletData.build()
 
     fun login(loginWrapper: LoginWrapper): UserWrapper? {
         try {
-            var userModelo = digitalWallet.login(loginWrapper.email, loginWrapper.password)
-            return   UserWrapper(userModelo)
-        }catch (error: LoginException){
+            val usuario = digitalWallet.login(loginWrapper.email, loginWrapper.password)
+            return UserWrapper(usuario)
+        } catch (error: LoginException) {
             print(error)
         }
         return null
     }
 
     fun register(registerWrapper: RegisterWrapper): User? {
-        try{
+        try {
             val cvu = DigitalWallet.generateNewCVU()
-            val user = User(registerWrapper.idCard, registerWrapper.firstName, registerWrapper.lastName, registerWrapper.email, registerWrapper.password, false)
+            val user = User(
+                registerWrapper.idCard,
+                registerWrapper.firstName,
+                registerWrapper.lastName,
+                registerWrapper.email,
+                registerWrapper.password,
+                false
+            )
             val account = Account(user, cvu)
             digitalWallet.register(user)
             digitalWallet.assignAccount(user, account)
@@ -26,17 +33,17 @@ class Controler {
 
             return user
 
-        }catch(error: Error){
+        } catch (error: Error) {
             print(error)
         }
         return null
     }
 
     fun transfer(transferWrapper: TransferWrapper): Boolean {
-        try{
+        try {
             digitalWallet.transfer(transferWrapper.fromCVU, transferWrapper.toCVU, transferWrapper.amount.toDouble())
             return true
-        }catch (error: Error){
+        } catch (error: Error) {
             print(error)
             return false
         }
@@ -47,31 +54,31 @@ class Controler {
     }
 
     fun getMovimientos(cvu: String): MutableList<Transactional>? {
-        try{
-              val account: Account = digitalWallet.accountByCVU(cvu)
-              return account.transactions
-        }catch (error: Error){
+        try {
+            val account: Account = digitalWallet.accountByCVU(cvu)
+            return account.transactions
+        } catch (error: Error) {
             print(error)
         }
         return null
     }
 
     fun borrarUsuarioPorCVU(cvu: String): Boolean {
-        try{
+        try {
             val account: Account = digitalWallet.accountByCVU(cvu)
             digitalWallet.deleteUser(account.user)
             return true
-        }catch (error: Error){
+        } catch (error: Error) {
             print(error)
         }
         return false
     }
 
     fun balancePorCVU(cvu: String): Double? {
-        try{
+        try {
             val account: Account = digitalWallet.accountByCVU(cvu)
             return account.balance
-        }catch (error: Error){
+        } catch (error: Error) {
             print(error)
         }
         return null

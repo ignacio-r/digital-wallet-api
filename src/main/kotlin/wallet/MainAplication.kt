@@ -1,89 +1,101 @@
 package wallet
 
 import io.javalin.Javalin
+import io.javalin.http.BadRequestResponse
 
 fun main() {
     val app = Javalin.create().start(7000)
-    val controler = Controler()
+    val service = DigitalWalletService()
 
-    app.post("api/login") { ctx ->
-        //Falta encriptar la password y el return esta medio falopa
+    app.exception(BadRequestResponse::class.java) { e, ctx ->
+        ctx.status(400)
+        ctx.result("Bad Request")
+    }
+
+    app.post("login") { ctx ->
+        //Falta encriptar la password y el return esta medio falopa
         val loginWrapper: LoginWrapper = ctx.body<LoginWrapper>()
-        val userWrapper = controler.login(loginWrapper)
-         if (userWrapper != null) {
+        val userWrapper = service.login(loginWrapper)
+        if (userWrapper != null) {
             ctx.status(200)
-            ctx.json(userWrapper.email)
-         } else {
-            ctx.status(404)
-            ctx.json("usuario/password incorrectos")
-       }
-    }
-    app.post("/register"){ctx ->
-        val registerWrapper: RegisterWrapper = ctx.body<RegisterWrapper>()
-        val nuevoUsuario = controler.register(registerWrapper)
-        if(nuevoUsuario != null){
-            ctx.status(200)
-            ctx.json(nuevoUsuario.fullName())
-            // ctx.json(nuevoUsuario)
+            ctx.result("Exito!")
         } else {
-            ctx.status(400)
-            ctx.json("No deje campos en blanco al momento de agregar un usuario")
+            ctx.status(401)
+            ctx.result("Usuario o contraseña incorrectos")
         }
-
     }
-    app.post("/transfer"){ctx ->
+
+    app.post("register") { ctx ->
+        var registerWrapper: RegisterWrapper = ctx.body<RegisterWrapper>()
+        registerWrapper = ctx.bodyValidator<RegisterWrapper>()
+            .check({
+                it.email.trim() != ""
+                        && it.firstName.trim() != ""
+                        && it.lastName.trim() != ""
+                        && it.password.trim() != ""
+                        && it.idCard.trim() != ""
+            })
+            .get()
+        val nuevoUsuario = service.register(registerWrapper)
+        if (nuevoUsuario != null) {
+            ctx.status(200)
+            ctx.result("Registro exitoso")
+        } else {
+            ctx.status(500)
+            ctx.result("Error de registro. Por favor intente otra vez.")
+        }
+    }
+
+    app.post("transfer") { ctx ->
         val transferWrapper: TransferWrapper = ctx.body<TransferWrapper>()
-        val nuevaTransferencia = controler.transfer(transferWrapper)
-        if(nuevaTransferencia){
+        val nuevaTransferencia = service.transfer(transferWrapper)
+        if (nuevaTransferencia) {
             ctx.status(200)
             ctx.json(transferWrapper.fromCVU)
-        }else{
+        } else {
             ctx.status(400)
             ctx.json("Transferencia fallida")
         }
     }
-    app.post("/cashin"){ctx->
+    app.post("/cashin") { ctx ->
         val cashInWrapper: CashInWrapper = ctx.body<CashInWrapper>()
-        val cashIn = controler.cashin(cashInWrapper)
+        val cashIn = service.cashin(cashInWrapper)
 
     }
 
-    app.get("/transaccions/:cvu"){ctx ->
+    app.get("/transaccions/:cvu") { ctx ->
         val cvu = ctx.pathParam("cvu")
-        val movientos = controler.getMovimientos(cvu)
-        if(movientos != null){
+        val movientos = service.getMovimientos(cvu)
+        if (movientos != null) {
             ctx.status(200)
             ctx.json(movientos)
-        }else{
+        } else {
             ctx.status(404)
             ctx.json("CVU incorrecto")
         }
     }
 
-    app.delete("/users/:cvu"){ctx ->
+    app.delete("/users/:cvu") { ctx ->
         val cvu = ctx.pathParam("cvu")
-        val usuarioEliminadoConExito = controler.borrarUsuarioPorCVU(cvu)
-        if(usuarioEliminadoConExito){
+        val usuarioEliminadoConExito = service.borrarUsuarioPorCVU(cvu)
+        if (usuarioEliminadoConExito) {
             ctx.status(200)
             ctx.json("xd")
-        }else{
+        } else {
             ctx.status(404)
             ctx.json("CVU incorrecto")
         }
     }
 
-    app.get("/account/:cvu"){ctx ->
+    app.get("/account/:cvu") { ctx ->
         val cvu = ctx.pathParam("cvu")
-        val balanceRecuperado = controler.balancePorCVU(cvu)
-        if(balanceRecuperado != null){
+        val balanceRecuperado = service.balancePorCVU(cvu)
+        if (balanceRecuperado != null) {
             ctx.status(200)
             ctx.json(balanceRecuperado)
-        }else{
+        } else {
             ctx.status(404)
             ctx.json("CVU incorrecto")
         }
     }
-        app.get("/") { ctx -> ctx.result("Hello World")
-        }
-
 }
