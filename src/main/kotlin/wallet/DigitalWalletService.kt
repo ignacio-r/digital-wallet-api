@@ -43,8 +43,7 @@ class DigitalWalletService {
         try {
             digitalWallet.transfer(transferWrapper.fromCVU, transferWrapper.toCVU, transferWrapper.amount.toDouble())
             return true
-        } catch (error: Error) {
-            print(error)
+        } catch (error: NoSuchElementException) {
             return false
         }
     }

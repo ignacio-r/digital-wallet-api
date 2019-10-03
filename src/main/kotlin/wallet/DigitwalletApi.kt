@@ -65,7 +65,7 @@ class DigitwalletApi(private val port: Int) {
                 ctx.json(transferWrapper.fromCVU)
             } else {
                 ctx.status(400)
-                ctx.json("Transferencia fallida")
+                ctx.result("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos")
             }
         }
 

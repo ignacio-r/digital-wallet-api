@@ -26,7 +26,7 @@ class DigitalWalletApiTest {
 
     @Test
     @Order(1)
-    fun unPostoNoPuedeTenerElEmailOPasswordSinCompletar(){
+    fun unPostNoPuedeTenerElEmailOPasswordSinCompletar(){
         val json = """{"email":"", "password":"password"}""".trimMargin()
         val(_, response, _) = Fuel.post("login").body(json).response()
 
@@ -83,22 +83,36 @@ class DigitalWalletApiTest {
                 "password":"polo"
 	
             } """.trimMargin()
-        val(_, response, _) = Fuel.post("register").body(json).response()
-
+        val(_, response, result) = Fuel.post("register").body(json).response()
         assertEquals(200, response.statusCode)
         assertEquals("OK", response.responseMessage)
+
     }
     @Test
     @Order(6)
     fun unaTransferenciaNoPuedeSerRealizadaDesdeUnCVUQueNoPertenezcaAUnUsuario(){
         val json = """{
-                "email":"polo@gmail.com",
-                "firstName":"facundo",
-                "idCard":"12345667", 
-                "lastName":"Polo", 
-                "password":"polo"
-	
+                "fromCVU":"01",
+                "toCVU":"519264035",
+                "amount":"6"
             } """.trimMargin()
+        val(_, response, _) = Fuel.post("transfer").body(json).response()
 
+        assertEquals(400, response.statusCode)
+        assertEquals("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos", String(response.data))
+
+    }
+    @Test
+    @Order(8)
+    fun transferExitoso(){
+        val json = """{
+                "fromCVU":"060065243",
+                "toCVU":"a",
+                "amount":"6"
+            } """.trimMargin()
+        val(_, response, _) = Fuel.post("transfer").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos", String(response.data))
     }
 }
