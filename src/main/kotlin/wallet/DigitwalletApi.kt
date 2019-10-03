@@ -108,7 +108,7 @@ class DigitwalletApi(private val port: Int) {
             val balanceRecuperado = service.balancePorCVU(cvu)
             if (balanceRecuperado != null) {
                 ctx.status(200)
-                ctx.json(balanceRecuperado)
+                ctx.result("amount: ${balanceRecuperado}")
             } else {
                 ctx.status(404)
                 ctx.json("CVU incorrecto")

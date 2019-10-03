@@ -2,10 +2,7 @@ package wallet
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import io.javalin.Javalin
-import io.kotlintest.specs.AbstractAnnotationSpec
 import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.*
 
@@ -137,5 +134,18 @@ class DigitalWalletApiTest {
     }
     @Test
     @Order(11)
-    fun a(){}
+    fun transactions() {
+    }
+
+    @Test
+    @Order(12)
+    fun delete() {
+    }
+
+    @Test
+    @Order(13)
+    fun sePideElBalanceDeUnaCuentaPorSuCVU() {
+        val (_, response, _) = Fuel.get("account/060065243").response()
+        assertEquals("amount: 0.0", String(response.data).toString())
+    }
 }
