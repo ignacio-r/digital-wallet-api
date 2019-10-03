@@ -70,6 +70,7 @@ class DigitalWalletApiTest {
 
         assertEquals(400, response.statusCode)
         assertEquals("Bad Request", response.responseMessage)
+
     }
 
     @Test
@@ -104,7 +105,7 @@ class DigitalWalletApiTest {
     }
     @Test
     @Order(8)
-    fun transferExitoso(){
+    fun unCVUDestinatarioTambienTieneQuePertenecerAUnUsuarioDelSistema(){
         val json = """{
                 "fromCVU":"060065243",
                 "toCVU":"a",
@@ -115,4 +116,26 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos", String(response.data))
     }
+
+    @Test
+    @Order(9)
+    fun transferExitoso(){
+        val json = """{
+                "fromCVU":"060065243",
+                "toCVU":"519264035",
+                "amount":"0"
+            } """.trimMargin()
+        val(_, response, _) = Fuel.post("transfer").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Las transferencias tienen que tener un monto mayor a cero", String(response.data))
+    }
+    @Test
+    @Order(10)
+    fun cashIn(){
+        //algo de cashIn
+    }
+    @Test
+    @Order(11)
+    fun a(){}
 }

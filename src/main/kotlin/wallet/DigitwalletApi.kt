@@ -60,7 +60,11 @@ class DigitwalletApi(private val port: Int) {
         app.post("transfer") { ctx ->
             val transferWrapper: TransferWrapper = ctx.body<TransferWrapper>()
             val nuevaTransferencia = service.transfer(transferWrapper)
-            if (nuevaTransferencia) {
+            if(transferWrapper.amount.toInt() === 0){
+                ctx.status(400)
+                ctx.result("Las transferencias tienen que tener un monto mayor a cero")
+            }
+            else if (nuevaTransferencia) {
                 ctx.status(200)
                 ctx.json(transferWrapper.fromCVU)
             } else {
