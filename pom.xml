@@ -45,9 +45,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.5.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,12 +76,11 @@
             <artifactId>jackson-module-kotlin</artifactId>
             <version>2.10.0.pr1</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.kittinunf.fuel</groupId>
-            <artifactId>fuel</artifactId>
-            <version>2.2.0</version>
-            <scope>test</scope>
-        </dependency>
+            <dependency>
+                <groupId>com.github.kittinunf.fuel</groupId>
+                <artifactId>fuel</artifactId>
+                <version>2.2.0</version>
+            </dependency>
         <dependency>
             <groupId>com.github.kittinunf.fuel</groupId>
             <artifactId>fuel-jackson</artifactId>
