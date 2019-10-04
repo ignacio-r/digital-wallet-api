@@ -1,55 +1,40 @@
 package wallet
 
 import data.DigitalWalletData
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class DigitalWalletService {
     val digitalWallet = DigitalWalletData.build()
 
-    fun login(loginWrapper: LoginWrapper): UserWrapper? {
-        try {
-            val usuario = digitalWallet.login(loginWrapper.email, loginWrapper.password)
-            return UserWrapper(usuario)
-        } catch (error: LoginException) {
-            print(error)
-        }
-        return null
+    fun login(loginWrapper: LoginWrapper) {
+        digitalWallet.login(loginWrapper.email, loginWrapper.password)
     }
 
-    fun register(registerWrapper: RegisterWrapper): User? {
-        try {
-            val cvu = DigitalWallet.generateNewCVU()
-            val user = User(
-                registerWrapper.idCard,
-                registerWrapper.firstName,
-                registerWrapper.lastName,
-                registerWrapper.email,
-                registerWrapper.password,
-                false
-            )
-            val account = Account(user, cvu)
-            digitalWallet.register(user)
-            digitalWallet.assignAccount(user, account)
-            digitalWallet.addGift(DigitalWallet.createGift(account, 200.0))
-
-            return user
-
-        } catch (error: Error) {
-            print(error)
-        }
-        return null
+    fun register(registerWrapper: RegisterWrapper) {
+        val cvu = DigitalWallet.generateNewCVU()
+        val user = User(
+            registerWrapper.idCard,
+            registerWrapper.firstName,
+            registerWrapper.lastName,
+            registerWrapper.email,
+            registerWrapper.password,
+            false
+        )
+        val account = Account(user, cvu)
+        digitalWallet.register(user)
+        digitalWallet.assignAccount(user, account)
+        digitalWallet.addGift(DigitalWallet.createGift(account, 200.0))
     }
 
-    fun transfer(transferWrapper: TransferWrapper): Boolean {
-        try {
-            digitalWallet.transfer(transferWrapper.fromCVU, transferWrapper.toCVU, transferWrapper.amount.toDouble())
-            return true
-        } catch (error: NoSuchElementException) {
-            return false
-        }
+    fun transfer(transferWrapper: TransferWrapper) {
+        digitalWallet.transfer(transferWrapper.fromCVU, transferWrapper.toCVU, transferWrapper.amount.toDouble())
     }
 
-    fun cashin(cashInWrapper: CashInWrapper): Any? {
-        return null
+    fun cashin(cashInWrapper: CashInWrapper) {
+        val parsedDate = LocalDate.parse("01/${cashInWrapper.endDate}", DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        val card = DebitCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
+        digitalWallet.transferMoneyFromCard(cashInWrapper.fromCVU, card, cashInWrapper.amount.toDouble())
     }
 
     fun getMovimientos(cvu: String): MutableList<Transactional> {
