@@ -20,7 +20,7 @@ class DigitalWalletController(private val port: Int) {
                 ctx.status(500)
                 ctx.json("Error fatal")
             }
-            .exception(BadRequestResponse::class.java) { e, ctx ->
+            .exception(BadRequestResponse::class.java) { _, ctx ->
                 ctx.status(400)
                 ctx.result("Bad Request")
             }
@@ -44,7 +44,7 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("register") { ctx ->
-            var registerWrapper: RegisterWrapper = ctx.body<RegisterWrapper>()
+            var registerWrapper: RegisterWrapper
             registerWrapper = ctx.bodyValidator<RegisterWrapper>()
                 .check({ checkAllParams(it) })
                 .get()
@@ -68,7 +68,7 @@ class DigitalWalletController(private val port: Int) {
                 return@post
             }
             try {
-                val nuevaTransferencia = service.transfer(transferWrapper)
+                service.transfer(transferWrapper)
                 ctx.status(200)
                 ctx.json(transferWrapper.fromCVU)
             } catch (e: NoSuchElementException) {
