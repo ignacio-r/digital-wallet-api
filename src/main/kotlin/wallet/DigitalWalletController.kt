@@ -59,7 +59,9 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("transfer") { ctx ->
-            val transferWrapper: TransferWrapper = ctx.body<TransferWrapper>()
+            val transferWrapper: TransferWrapper = ctx.bodyValidator<TransferWrapper>()
+                .check({ checkAllParams(it) })
+                .get()
             if (transferWrapper.amount.toInt() <= 0) {
                 ctx.status(400)
                 ctx.result("Las transferencias tienen que tener un monto mayor a cero")
@@ -76,10 +78,22 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("/cashin") { ctx ->
-            val cashInWrapper: CashInWrapper = ctx.body<CashInWrapper>()
-            service.cashin(cashInWrapper)
-            ctx.status(200)
-            ctx.result("Cash In exitoso")
+            val cashInWrapper: CashInWrapper = ctx.bodyValidator<CashInWrapper>()
+                .check({ checkAllParams(it) })
+                .get()
+            if (cashInWrapper.amount.toDouble() <= 0) {
+                ctx.status(400)
+                ctx.result("Cash In fallido. Chequee que el monto sea mayor a 0")
+                return@post
+            }
+            try {
+                service.cashin(cashInWrapper)
+                ctx.status(200)
+                ctx.result("Cash In exitoso")
+            } catch (e: NoSuchElementException) {
+                ctx.status(400)
+                ctx.result("Cash In fallido. Chequee que el CVU sea correcto")
+            }
         }
 
         app.get("/transaccions/:cvu") { ctx ->

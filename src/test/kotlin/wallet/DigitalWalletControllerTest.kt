@@ -30,7 +30,6 @@ class DigitalWalletApiTest {
 
         assertEquals(400, response.statusCode)
         assertEquals("Bad Request", response.responseMessage)
-
     }
 
     @Test
@@ -41,7 +40,6 @@ class DigitalWalletApiTest {
 
         assertEquals(401, response.statusCode)
         assertEquals("Unauthorized", response.responseMessage)
-
     }
 
     @Test
@@ -68,7 +66,6 @@ class DigitalWalletApiTest {
 
         assertEquals(400, response.statusCode)
         assertEquals("Bad Request", response.responseMessage)
-
     }
 
     @Test
@@ -85,10 +82,95 @@ class DigitalWalletApiTest {
         val(_, response, _) = Fuel.post("register").body(json).response()
         assertEquals(200, response.statusCode)
         assertEquals("OK", response.responseMessage)
-
     }
+
     @Test
     @Order(6)
+    fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_campos_vacios(){
+        val json = """{
+            "fromCVU": "" ,
+            "amount" : 500.25,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, response, _) = Fuel.post("cashin").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Bad Request", String(response.data))
+    }
+
+    @Test
+    @Order(7)
+    fun se_retorna_400_si_se_intenta_realizar_un_cash_in_a_un_cvu_que_no_existe(){
+        val json = """{
+            "fromCVU": "100000000",
+            "amount" : 500.25,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, response, _) = Fuel.post("cashin").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Cash In fallido. Chequee que el CVU sea correcto", String(response.data))
+    }
+
+    @Test
+    @Order(8)
+    fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_un_monto_igual_a_0(){
+        val json = """{
+            "fromCVU": "100000000",
+            "amount" : 0,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, response, _) = Fuel.post("cashin").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Cash In fallido. Chequee que el monto sea mayor a 0", String(response.data))
+    }
+
+    @Test
+    @Order(9)
+    fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_un_monto_negativo(){
+        val json = """{
+            "fromCVU": "100000000",
+            "amount" : -10,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, response, _) = Fuel.post("cashin").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Cash In fallido. Chequee que el monto sea mayor a 0", String(response.data))
+    }
+
+    @Test
+    @Order(10)
+    fun se_retorna_200_para_un_cash_in_exitoso(){
+        val json = """{
+            "fromCVU": "060065243",
+            "amount" : 10,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, response, _) = Fuel.post("cashin").body(json).response()
+
+        assertEquals(200, response.statusCode)
+        assertEquals("Cash In exitoso", String(response.data))
+    }
+
+    @Test
+    @Order(11)
     fun se_retorna_400_al_intentar_realizar_una_transferencia_desde_un_cvu_que_no_pertenece_al_usuario(){
         val json = """{
                 "fromCVU":"01",
@@ -99,10 +181,24 @@ class DigitalWalletApiTest {
 
         assertEquals(400, response.statusCode)
         assertEquals("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos", String(response.data))
-
     }
+
     @Test
-    @Order(8)
+    @Order(12)
+    fun se_retorna_400_si_se_intenta_realizar_una_transferencia_con_campos_vacios(){
+        val json = """{
+                "fromCVU":"",
+                "toCVU":"",
+                "amount":"6"
+            } """.trimMargin()
+        val(_, response, _) = Fuel.post("transfer").body(json).response()
+
+        assertEquals(400, response.statusCode)
+        assertEquals("Bad Request", String(response.data))
+    }
+
+    @Test
+    @Order(13)
     fun se_retorna_400_si_un_cvu_de_una_transferencia_no_pertenece_a_ningun_usuario_del_sistema(){
         val json = """{
                 "fromCVU":"060065243",
@@ -116,7 +212,7 @@ class DigitalWalletApiTest {
     }
 
     @Test
-    @Order(9)
+    @Order(14)
     fun se_retorna_400_si_el_monto_de_la_transferencia_es_0(){
         val json = """{
                 "fromCVU":"060065243",
@@ -130,7 +226,7 @@ class DigitalWalletApiTest {
     }
 
     @Test
-    @Order(10)
+    @Order(15)
     fun se_retorna_400_si_el_monto_de_la_transferencia_es_menor_a_0(){
         val json = """{
                 "fromCVU":"060065243",
@@ -143,35 +239,41 @@ class DigitalWalletApiTest {
         assertEquals("Las transferencias tienen que tener un monto mayor a cero", String(response.data))
     }
 
-//    @Test
-//    @Order(10)
-//    fun se_retorna_200_si_la_transferencia_es_exitosa(){
-//        val json = """{
-//                "fromCVU":"060065243",
-//                "toCVU":"519264035",
-//                "amount":"1"
-//            } """.trimMargin()
-//        val(_, response, _) = Fuel.post("transfer").body(json).response()
-//
-//        assertEquals(200, response.statusCode)
-//    }
     @Test
-    @Order(11)
-    fun cashIn(){
-        //algo de cashIn
+    @Order(16)
+    fun se_retorna_200_si_la_transferencia_es_exitosa(){
+        val cashinJson = """{
+            "fromCVU": "060065243",
+            "amount" : 10,
+            "cardNumber":"1234 1234 1234 1234",
+            "fullName":"Facundo ",
+            "endDate":"07/2019",
+            "securityCode": "123"
+                } """.trimMargin()
+        val(_, _, _) = Fuel.post("cashin").body(cashinJson).response()
+
+        val transferJson = """{
+                "fromCVU":"060065243",
+                "toCVU":"519264035",
+                "amount":"10"
+            } """.trimMargin()
+        val(_, response, _) = Fuel.post("transfer").body(transferJson).response()
+
+        assertEquals(200, response.statusCode)
     }
+
     @Test
-    @Order(12)
+    @Order(17)
     fun transactions() {
     }
 
     @Test
-    @Order(13)
+    @Order(18)
     fun delete() {
     }
 
     @Test
-    @Order(14)
+    @Order(19)
     fun sePideElBalanceDeUnaCuentaPorSuCVU() {
         val (_, response, _) = Fuel.get("account/060065243").response()
         assertEquals("amount: 0.0", String(response.data).toString())
