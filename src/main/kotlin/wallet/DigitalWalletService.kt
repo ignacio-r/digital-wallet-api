@@ -52,25 +52,14 @@ class DigitalWalletService {
         return null
     }
 
-    fun getMovimientos(cvu: String): MutableList<Transactional>? {
-        try {
-            val account: Account = digitalWallet.accountByCVU(cvu)
-            return account.transactions
-        } catch (error: Error) {
-            print(error)
-        }
-        return null
+    fun getMovimientos(cvu: String): MutableList<Transactional> {
+        val account: Account = digitalWallet.accountByCVU(cvu)
+        return account.transactions
     }
 
-    fun borrarUsuarioPorCVU(cvu: String): Boolean {
-        try {
-            val account: Account = digitalWallet.accountByCVU(cvu)
-            digitalWallet.deleteUser(account.user)
-            return true
-        } catch (error: Error) {
-            print(error)
-        }
-        return false
+    fun borrarUsuarioPorCVU(cvu: String) {
+        val account: Account = digitalWallet.accountByCVU(cvu)
+        digitalWallet.deleteUser(account.user)
     }
 
     fun balancePorCVU(cvu: String): Double? {

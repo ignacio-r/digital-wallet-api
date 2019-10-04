@@ -13,7 +13,7 @@ class DigitalWalletApiTest {
 
     @BeforeAll
     fun setUp() {
-        api = DigitwalletApi(8000).init()
+        api = DigitalWalletController(8000).init()
         FuelManager.instance.basePath = "http://localhost:${api.port()}/"
     }
     @AfterAll
@@ -133,19 +133,22 @@ class DigitalWalletApiTest {
         //algo de cashIn
     }
     @Test
-    @Order(11)
+    @Order(17)
     fun transactions() {
+        val (_, response, _) = Fuel.get("transaction/060065243").response()
+        assertEquals(200, response.statusCode)
     }
 
     @Test
-    @Order(12)
-    fun delete() {
-    }
-
-    @Test
-    @Order(13)
+    @Order(18)
     fun sePideElBalanceDeUnaCuentaPorSuCVU() {
         val (_, response, _) = Fuel.get("account/060065243").response()
         assertEquals("amount: 0.0", String(response.data).toString())
+    }
+    @Test
+    @Order(19)
+    fun deleteExitosoAUser() {
+        val (_, response, _) = Fuel.delete("users/060065243").response()
+        assertEquals(200, response.statusCode)
     }
 }

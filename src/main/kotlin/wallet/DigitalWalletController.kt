@@ -5,7 +5,7 @@ import io.javalin.http.BadRequestResponse
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
-class DigitwalletApi(private val port: Int) {
+class DigitalWalletController(private val port: Int) {
 
     fun checkAllParams(asd: Any): Boolean {
         val props = asd::class.memberProperties as List<KProperty1<Any, *>>
@@ -79,13 +79,14 @@ class DigitwalletApi(private val port: Int) {
 
         }
 
-        app.get("/transaccions/:cvu") { ctx ->
+        app.get("/transactions/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
-            val movientos = service.getMovimientos(cvu)
-            if (movientos != null) {
+            try {
+                val movientos = service.getMovimientos(cvu)
                 ctx.status(200)
                 ctx.json(movientos)
-            } else {
+
+            } catch (error: Error) {
                 ctx.status(404)
                 ctx.json("CVU incorrecto")
             }
@@ -93,11 +94,12 @@ class DigitwalletApi(private val port: Int) {
 
         app.delete("/users/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
-            val usuarioEliminadoConExito = service.borrarUsuarioPorCVU(cvu)
-            if (usuarioEliminadoConExito) {
+
+            try{
+                service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
                 ctx.json("xd")
-            } else {
+            } catch (error: Error){
                 ctx.status(404)
                 ctx.json("CVU incorrecto")
             }
