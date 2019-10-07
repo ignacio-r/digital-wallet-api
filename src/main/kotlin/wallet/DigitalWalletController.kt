@@ -115,7 +115,7 @@ class DigitalWalletController(private val port: Int) {
             try{
                 service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
-                ctx.json("xd")
+                ctx.json("Borrado exitoso")
             } catch (error: Error){
                 ctx.status(404)
                 ctx.json("CVU incorrecto")

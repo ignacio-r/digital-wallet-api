@@ -235,9 +235,9 @@ class DigitalWalletApiTest {
             "060065243", "10",
             "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
         )
-        val (_, _, _) = Fuel.post("cashin").body(cashin_json_obj.toString()).response()
+        Fuel.post("cashin").body(cashin_json_obj.toString()).response()
 
-        val transfer_json_obj: JsonObject = jsonFactory.transferJson("060065243", "519264035", "10")
+        val transfer_json_obj: JsonObject = jsonFactory.transferJson("130503138", "519264035", "10")
 
         val (_, response, _) = Fuel.post("transfer").body(transfer_json_obj.toString()).response()
 
@@ -247,28 +247,47 @@ class DigitalWalletApiTest {
     @Test
     @Order(17)
     fun transactions() {
-        val (_, response, _) = Fuel.get("transaction/060065243").response()
+        val (_, response, _) = Fuel.get("transactions/130503138").response()
+        print(response)
         assertEquals(200, response.statusCode)
     }
 
     @Test
     @Order(18)
+    fun se_retorna_los_movientos_de_una_cuenta(){
+
+    }
+
+    @Test
+    @Order(19)
     fun delete() {
     }
 
 
     @Test
-    @Order(19)
+    @Order(20)
     fun sePideElBalanceDeUnaCuentaPorSuCVU() {
         val (_, response, _) = Fuel.get("account/060065243").response()
-        assertEquals("amount: 0.0", String(response.data).toString())
+        assertEquals("amount: 0.0", String(response.data))
     }
 
     @Test
-    @Order(19)
+    @Order(21)
     fun deleteExitosoAUser() {
-        val (_, response, _) = Fuel.delete("users/060065243").response()
+        val (_, response, _) = Fuel.delete("users/519264035").response()
         assertEquals(200, response.statusCode)
+    }
+    @Test
+    @Order(22)
+    fun noSePuedeBorrarUnaCuentaConSaldoMayorACero(){
+        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
+            "060065243", "10",
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+        )
+        Fuel.post("cashin").body(cashin_json_obj.toString()).response()
+        val (_ , response, _) = Fuel.delete("users/060065243").response()
+        print(response)
+
     }
 
 }
