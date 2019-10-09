@@ -318,7 +318,7 @@ class DigitalWalletApiTest {
     }
     @Test
     @Order(25)
-    fun eror_404_cvu_incorrecto_al_pedir_un_balance_de_un_cvu_incorrecto(){
+    fun error_404_cvu_incorrecto_al_pedir_un_balance_de_un_cvu_incorrecto() {
         val (_, response, _) = Fuel.get("account/0800").response()
 
         assertEquals(404, response.statusCode)
