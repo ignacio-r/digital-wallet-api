@@ -2,11 +2,11 @@ package wallet
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.jackson.responseObject
 import com.google.gson.JsonObject
 import io.javalin.Javalin
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import kotlin.test.assertNotEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -251,10 +251,6 @@ class DigitalWalletApiTest {
     @Test
     @Order(18)
     fun se_retorna_200_al_pedir_los_movimientos_de_una_cuenta() {
-        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
-            "060065243", "11",
-            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
-        )
         val (_, response, _) = Fuel.get("transactions/060065243").response()
 
         assertEquals(200, response.statusCode)
@@ -262,16 +258,15 @@ class DigitalWalletApiTest {
     @Test
     @Order(19)
     fun se_retornan_una_lista_de_los_movimientos_de_una_cuenta() {
-        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
-            "060065243", "11",
-            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
-        )
-        Fuel.post("cashin").body(cashin_json_obj.toString()).response()
+        val (_, response, result) = Fuel.get("transactions/060065243").responseObject<List<Transaction>>()
 
-        val (_, response, _) = Fuel.get("transactions/060065243").response()
+        val transaction = result.get()[0]
 
-        // TODO: Arreglar el assert
-        assertNotEquals("[]", String(response.data))
+        assertEquals(transaction.amount, 10.0)
+        assertEquals(transaction.dateTime, "{}")
+        assertEquals(transaction.description, "Carga con tarjeta")
+        assertEquals(transaction.fullDescription, "Carga con tarjeta xxxx xxxx xxxx , ,  de $10.0")
+        assertEquals(transaction.isCashOut, false)
     }
 
     @Test

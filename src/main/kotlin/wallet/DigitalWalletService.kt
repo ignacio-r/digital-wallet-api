@@ -2,7 +2,6 @@ package wallet
 
 import data.DigitalWalletData
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DigitalWalletService {
@@ -40,7 +39,14 @@ class DigitalWalletService {
 
     fun getMovimientos(cvu: String): MutableList<Transaction> {
         val account: Account = digitalWallet.accountByCVU(cvu)
-        return account.transactions.map { transactional -> Transaction(transactional.amount, transactional.dateTime, transactional.isCashOut())}.toMutableList()
+        return account.transactions.map { transactional ->
+            Transaction(
+                amount = transactional.amount,
+                description = transactional.description(),
+                fullDescription = transactional.fullDescription(),
+                isCashOut = transactional.isCashOut()
+            )
+        }.toMutableList()
     }
 
     fun borrarUsuarioPorCVU(cvu: String) {
@@ -60,5 +66,10 @@ class DigitalWalletService {
 
 }
 
-class Transaction(val amount: Double, val dateTime: LocalDateTime, val isCashOut: Boolean) {
-}
+class Transaction(
+    val amount: Double,
+    val dateTime: String = "{}",
+    val description: String = "",
+    val fullDescription: String = "",
+    val isCashOut: Boolean
+)
