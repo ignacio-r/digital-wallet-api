@@ -60,14 +60,8 @@ class DigitalWalletApiTest {
     @Order(4)
     fun se_retorna_400_al_intentar_registrarse_con_datos_incompletos() {
 
-        val email = ""
-        val firstName = " "
-        val idCard = ""
-        val lastName = ""
-        val password = "polo"
-        val json_obj: JsonObject = jsonFactory.registerUserJson(email, firstName, idCard, lastName, password)
-
-        val (_, response, _) = Fuel.post("register").body(json_obj.toString()).response()
+        val (_, response, _) = Fuel.post("register")
+            .body(jsonFactory.registerUserJson("", " ", "", "", "polo").toString()).response()
 
         assertEquals(400, response.statusCode)
         assertEquals("Bad Request", response.responseMessage)
@@ -157,7 +151,7 @@ class DigitalWalletApiTest {
         val json_obj: JsonObject = jsonFactory.transferJson("01", "519264035", "6")
 
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
-
+        519264035
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
@@ -232,12 +226,13 @@ class DigitalWalletApiTest {
     @Order(16)
     fun se_retorna_200_si_la_transferencia_es_exitosa() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
-            "060065243", "10",
+            "060065243", "11",
             "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
         )
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
 
-        val transfer_json_obj: JsonObject = jsonFactory.transferJson("130503138", "519264035", "10")
+        val transfer_json_obj: JsonObject = jsonFactory
+            .transferJson("060065243", "519264035", "10")
 
         val (_, response, _) = Fuel.post("transfer").body(transfer_json_obj.toString()).response()
 
@@ -248,19 +243,35 @@ class DigitalWalletApiTest {
     @Order(17)
     fun transactions() {
         val (_, response, _) = Fuel.get("transactions/130503138").response()
-        print(response)
+
         assertEquals(200, response.statusCode)
     }
 
     @Test
     @Order(18)
-    fun se_retorna_los_movientos_de_una_cuenta(){
+    fun se_retorna_200_al_pedir_los_movimientos_de_una_cuenta() {
+        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
+            "060065243", "11",
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+        )
+        val (_, response, _) = Fuel.get("transactions/060065243").response()
 
+        assertEquals(200, response.statusCode)
     }
-
     @Test
-    @Order(19)
-    fun delete() {
+    @Order(18)
+    fun se_retornan_una_lista_de_los_movimientos_de_una_cuenta() {
+        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
+            "060065243", "50",
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+        )
+        Fuel.post("cashin").body(cashin_json_obj.toString())
+
+
+        val (_, response, _) = Fuel.get("transactions/060065243").response()
+
+        throw error("Should be implemented")
+
     }
 
 
@@ -274,20 +285,21 @@ class DigitalWalletApiTest {
     @Test
     @Order(21)
     fun deleteExitosoAUser() {
-        val (_, response, _) = Fuel.delete("users/519264035").response()
+        val (_, response, _) = Fuel.delete("users/203369045").response()
         assertEquals(200, response.statusCode)
     }
+
     @Test
     @Order(22)
-    fun noSePuedeBorrarUnaCuentaConSaldoMayorACero(){
+    fun noSePuedeBorrarUnaCuentaConSaldoMayorACero() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "10",
             "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
         )
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
-        val (_ , response, _) = Fuel.delete("users/060065243").response()
-        print(response)
+        val (_, response, _) = Fuel.delete("users/060065243").response()
 
+        assertEquals("CVU incorrecto o con saldo mayor a cero", String(response.data))
     }
 
 }

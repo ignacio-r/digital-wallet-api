@@ -35,7 +35,6 @@ class DigitalWalletService {
         val parsedDate = LocalDate.parse("01/${cashInWrapper.endDate}", DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         val card = DebitCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
         digitalWallet.transferMoneyFromCard(cashInWrapper.fromCVU, card, cashInWrapper.amount.toDouble())
-
     }
 
     fun getMovimientos(cvu: String): MutableList<Transactional> {

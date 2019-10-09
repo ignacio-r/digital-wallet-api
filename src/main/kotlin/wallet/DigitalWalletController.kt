@@ -77,7 +77,7 @@ class DigitalWalletController(private val port: Int) {
             }
         }
 
-        app.post("/cashin") { ctx ->
+        app.post("cashin") { ctx ->
             val cashInWrapper: CashInWrapper = ctx.bodyValidator<CashInWrapper>()
                 .check({ checkAllParams(it) })
                 .get()
@@ -99,13 +99,13 @@ class DigitalWalletController(private val port: Int) {
         app.get("/transactions/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
             try {
-                val movientos = service.getMovimientos(cvu)
+                val movimientos = service.getMovimientos(cvu)
                 ctx.status(200)
-                ctx.json(movientos)
+                ctx.json(movimientos)
 
             } catch (error: Error) {
                 ctx.status(404)
-                ctx.json("CVU incorrecto")
+                ctx.result("CVU incorrecto")
             }
         }
 
@@ -116,9 +116,9 @@ class DigitalWalletController(private val port: Int) {
                 service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
                 ctx.json("Borrado exitoso")
-            } catch (error: Error){
+            } catch (error: Exception) {
                 ctx.status(404)
-                ctx.json("CVU incorrecto")
+                ctx.result("CVU incorrecto o con saldo mayor a cero")
             }
         }
 
@@ -130,7 +130,7 @@ class DigitalWalletController(private val port: Int) {
                 ctx.result("amount: ${balanceRecuperado}")
             } else {
                 ctx.status(404)
-                ctx.json("CVU incorrecto")
+                ctx.result("CVU incorrecto")
             }
         }
         return app
