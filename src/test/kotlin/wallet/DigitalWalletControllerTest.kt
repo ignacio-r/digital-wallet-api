@@ -258,7 +258,7 @@ class DigitalWalletApiTest {
     @Test
     @Order(19)
     fun se_retornan_una_lista_de_los_movimientos_de_una_cuenta() {
-        val (_, response, result) = Fuel.get("transactions/060065243").responseObject<List<Transaction>>()
+        val (_, _, result) = Fuel.get("transactions/060065243").responseObject<List<Transaction>>()
 
         val transaction = result.get()[0]
 
@@ -308,6 +308,22 @@ class DigitalWalletApiTest {
 
         assertEquals("CVU incorrecto", String(response.data))
     }
+    @Test
+    @Order(24)
+    fun error_404_al_momento_de_pedir_los_movientos_de_un_cvu_incorrecto(){
+        val (_, response, _) = Fuel.get("transactions/0800").responseObject<List<Transaction>>()
 
+        assertEquals(404, response.statusCode)
+        assertEquals("CVU incorrecto", String(response.data))
+    }
+    @Test
+    @Order(25)
+    fun eror_404_cvu_incorrecto_al_pedir_un_balance_de_un_cvu_incorrecto(){
+        val (_, response, _) = Fuel.get("account/0800").response()
+
+        assertEquals(404, response.statusCode)
+        assertEquals("CVU incorrecto", String(response.data))
+
+    }
 }
 

@@ -5,3 +5,4 @@ class LoginWrapper {
     var password: String = ""
 
 }
+

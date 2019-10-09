@@ -29,10 +29,10 @@ class DigitalWalletController(private val port: Int) {
         val service = DigitalWalletService()
 
         app.post("login") { ctx ->
-            //Falta encriptar la password
             val loginWrapper: LoginWrapper = ctx.bodyValidator<LoginWrapper>()
                 .check({ checkAllParams(it)})
                 .get()
+     //       loginWrapper.encodePassword()
             try {
                 service.login(loginWrapper)
                 ctx.status(200)
@@ -126,14 +126,16 @@ class DigitalWalletController(private val port: Int) {
 
         app.get("/account/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
-            val balanceRecuperado = service.balancePorCVU(cvu)
-            if (balanceRecuperado != null) {
+            try {
+                val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
                 ctx.result("amount: ${balanceRecuperado}")
-            } else {
+
+            } catch (error: NoSuchElementException){
                 ctx.status(404)
                 ctx.result("CVU incorrecto")
             }
+
         }
         return app
     }
