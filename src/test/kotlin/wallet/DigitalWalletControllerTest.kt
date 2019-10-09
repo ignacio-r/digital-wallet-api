@@ -101,7 +101,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Cash In fallido. Chequee que el CVU sea correcto", String(response.data))
+        assertEquals("Cash In fallido. CVU incorrecto", String(response.data))
     }
 
     @Test
@@ -277,7 +277,7 @@ class DigitalWalletApiTest {
     @Test
     @Order(20)
     fun sePideElBalanceDeUnaCuentaPorSuCVU() {
-        val (_, response, _) = Fuel.get("account/060065243").response()
+        val (_, response, _) = Fuel.get("account/519264035").response()
         assertEquals("amount: 0.0", String(response.data))
     }
 
@@ -290,7 +290,7 @@ class DigitalWalletApiTest {
 
     @Test
     @Order(22)
-    fun noSePuedeBorrarUnaCuentaConSaldoMayorACero() {
+    fun deleteNoExitosoConCuentaConSaldoMayorACero() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "10",
             "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
@@ -298,7 +298,20 @@ class DigitalWalletApiTest {
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
         val (_, response, _) = Fuel.delete("users/060065243").response()
 
-        assertEquals("CVU incorrecto o con saldo mayor a cero", String(response.data))
+        assertEquals("No puede eliminar cuenta 060065243 con fondos", String(response.data))
+    }
+
+    @Test
+    @Order(23)
+    fun deleteNoExitosoConCVUIncorrecto() {
+        val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
+            "060065243", "10",
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+        )
+        Fuel.post("cashin").body(cashin_json_obj.toString()).response()
+        val (_, response, _) = Fuel.delete("users/222").response()
+
+        assertEquals("CVU incorrecto", String(response.data))
     }
 
 }

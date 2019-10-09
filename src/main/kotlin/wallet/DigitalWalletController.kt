@@ -92,7 +92,7 @@ class DigitalWalletController(private val port: Int) {
                 ctx.result("Cash In exitoso")
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
-                ctx.result("Cash In fallido. Chequee que el CVU sea correcto")
+                ctx.result("Cash In fallido. CVU incorrecto")
             }
         }
 
@@ -103,7 +103,7 @@ class DigitalWalletController(private val port: Int) {
                 ctx.status(200)
                 ctx.json(movimientos)
 
-            } catch (error: Error) {
+            } catch (error: NoSuchElementException) {
                 ctx.status(404)
                 ctx.result("CVU incorrecto")
             }
@@ -111,14 +111,16 @@ class DigitalWalletController(private val port: Int) {
 
         app.delete("/users/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
-
             try{
                 service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
                 ctx.json("Borrado exitoso")
-            } catch (error: Exception) {
+            } catch (error: IllegalArgumentException) {
                 ctx.status(404)
-                ctx.result("CVU incorrecto o con saldo mayor a cero")
+                ctx.result("No puede eliminar cuenta $cvu con fondos")
+            } catch (error: NoSuchElementException) {
+                ctx.status(404)
+                ctx.result("CVU incorrecto")
             }
         }
 
