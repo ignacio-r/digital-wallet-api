@@ -7,8 +7,8 @@ import java.time.format.DateTimeFormatter
 class DigitalWalletService {
     val digitalWallet = DigitalWalletData.build()
 
-    fun login(loginWrapper: LoginWrapper) {
-        digitalWallet.login(loginWrapper.email, loginWrapper.password)
+    fun login(loginWrapper: LoginWrapper): User {
+        return digitalWallet.login(loginWrapper.email, loginWrapper.password)
     }
 
     fun register(registerWrapper: RegisterWrapper) {
@@ -73,3 +73,7 @@ class Transaction(
     val fullDescription: String = "",
     val isCashOut: Boolean
 )
+
+class Balance(val amount: Double)
+
+

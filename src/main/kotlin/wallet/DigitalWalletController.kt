@@ -34,9 +34,9 @@ class DigitalWalletController(private val port: Int) {
                 .get()
      //       loginWrapper.encodePassword()
             try {
-                service.login(loginWrapper)
+                val login = service.login(loginWrapper)
                 ctx.status(200)
-                ctx.result("Exito!")
+                ctx.result("Login exitoso para cuenta ${login.account!!.cvu}")
             } catch (e: LoginException) {
                 ctx.status(401)
                 ctx.result("Usuario o contraseña incorrectos")
@@ -44,7 +44,7 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("register") { ctx ->
-            var registerWrapper: RegisterWrapper
+            val registerWrapper: RegisterWrapper
             registerWrapper = ctx.bodyValidator<RegisterWrapper>()
                 .check({ checkAllParams(it) })
                 .get()
@@ -129,8 +129,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.result("amount: ${balanceRecuperado}")
-
+                ctx.json(Balance(balanceRecuperado!!))
             } catch (error: NoSuchElementException){
                 ctx.status(404)
                 ctx.result("CVU incorrecto")

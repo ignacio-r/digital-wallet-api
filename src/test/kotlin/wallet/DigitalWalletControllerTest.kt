@@ -152,7 +152,6 @@ class DigitalWalletApiTest {
         val json_obj: JsonObject = jsonFactory.transferJson("01", "519264035", "6")
 
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
-        519264035
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
@@ -272,8 +271,9 @@ class DigitalWalletApiTest {
     @Test
     @Order(20)
     fun sePideElBalanceDeUnaCuentaPorSuCVU() {
-        val (_, response, _) = Fuel.get("account/519264035").response()
-        assertEquals("amount: 0.0", String(response.data))
+        val (_, _, result) = Fuel.get("account/519264035").responseObject<Balance>()
+        val balance = result.get()
+        assertEquals(balance.amount, 0.0)
     }
 
     @Test
@@ -323,7 +323,6 @@ class DigitalWalletApiTest {
 
         assertEquals(404, response.statusCode)
         assertEquals("CVU incorrecto", String(response.data))
-
     }
 }
 
