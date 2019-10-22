@@ -87,7 +87,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Bad Request", String(response.data))
+        assertEquals("Request body as CashInWrapper invalid - Failed check", String(response.data))
     }
 
     @Test
@@ -171,7 +171,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Bad Request", String(response.data))
+        assertEquals("Request body as TransferWrapper invalid - Failed check", String(response.data))
     }
 
     @Test
@@ -306,7 +306,7 @@ class DigitalWalletApiTest {
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
         val (_, response, _) = Fuel.delete("users/222").response()
 
-        assertEquals("CVU incorrecto", String(response.data))
+        assertEquals("La cuenta con CVU 222 no existe", String(response.data))
     }
     @Test
     @Order(24)
@@ -314,7 +314,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.get("transactions/0800").responseObject<List<Transaction>>()
 
         assertEquals(404, response.statusCode)
-        assertEquals("CVU incorrecto", String(response.data))
+        assertEquals("La cuenta con CVU 0800 no existe", String(response.data))
     }
     @Test
     @Order(25)
@@ -322,7 +322,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.get("account/0800").response()
 
         assertEquals(404, response.statusCode)
-        assertEquals("CVU incorrecto", String(response.data))
+        assertEquals("La cuenta con CVU 0800 no existe", String(response.data))
     }
 }
 
