@@ -18,7 +18,7 @@ class DigitalWalletController(private val port: Int) {
             .exception(Exception::class.java) { e, ctx ->
                 e.printStackTrace()
                 ctx.status(500)
-                ctx.json("Error fatal")
+                ctx.json("{\"message\": \"Error fatal\"}")
             }
             .start(port)
 
@@ -32,10 +32,10 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val login = service.login(loginWrapper)
                 ctx.status(200)
-                ctx.result("Login exitoso para cuenta ${login.account!!.cvu}")
+                ctx.json("{\"message\": \"Login exitoso para cuenta ${login.account!!.cvu}\"}")
             } catch (e: LoginException) {
                 ctx.status(401)
-                ctx.result("Usuario o contraseña incorrectos")
+                ctx.json("{\"message\": \"Usuario o contraseña incorrectos\"}")
             }
         }
 
@@ -51,10 +51,10 @@ class DigitalWalletController(private val port: Int) {
             try {
                 service.register(registerWrapper)
                 ctx.status(200)
-                ctx.result("Registro exitoso")
+                ctx.json("{\"message\": \"Registro exitoso\"}")
             } catch (e: IllegalArgumentException) {
                 ctx.status(500)
-                ctx.result(e.message!!)
+                ctx.json("{\"message\": ${e.message!!}}")
             }
         }
 
@@ -64,25 +64,25 @@ class DigitalWalletController(private val port: Int) {
                 .get()
             if (transferWrapper.amount.toInt() <= 0) {
                 ctx.status(400)
-                ctx.result("Las transferencias tienen que tener un monto mayor a cero")
+                ctx.json("{\"message\": \"Las transferencias tienen que tener un monto mayor a cero\"}")
                 return@post
             }
             try {
                 service.transfer(transferWrapper)
                 ctx.status(200)
-                ctx.json(transferWrapper.fromCVU)
+                ctx.json("{\"message\": \"Success\", \"cvu\": ${transferWrapper.fromCVU}}")
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
-                ctx.result("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos")
+                ctx.json("{\"message\": \"Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos\"}")
             } catch (e: IllegalArgumentException) {
                 ctx.status(400)
-                ctx.result(e.message!!)
+                ctx.json("{\"message\": ${e.message!!}}")
             } catch (e: BlockedAccountException) {
                 ctx.status(400)
-                ctx.result(e.message!!)
+                ctx.json("{\"message\": ${e.message!!}}")
             } catch (e: NoMoneyException) {
                 ctx.status(400)
-                ctx.result(e.message!!)
+                ctx.json("{\"message\": ${e.message!!}}")
             }
         }
 
@@ -92,19 +92,19 @@ class DigitalWalletController(private val port: Int) {
                 .get()
             if (cashInWrapper.amount.toDouble() <= 0) {
                 ctx.status(400)
-                ctx.result("Cash In fallido. Chequee que el monto sea mayor a 0")
+                ctx.json("{\"message\": \"Cash In fallido. Chequee que el monto sea mayor a 0\"}")
                 return@post
             }
             try {
                 service.cashin(cashInWrapper)
                 ctx.status(200)
-                ctx.result("Cash In exitoso")
+                ctx.json("{\"message\": \"Cash In exitoso\"}")
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
-                ctx.result("Cash In fallido. CVU incorrecto")
+                ctx.json("{\"message\": \"Cash In fallido. CVU incorrecto\"}")
             } catch (e: BlockedAccountException) {
                 ctx.status(400)
-                ctx.result(e.message!!)
+                ctx.json("{\"message\": ${e.message!!}}")
             }
         }
 
@@ -113,11 +113,11 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val movimientos = service.getMovimientos(cvu)
                 ctx.status(200)
-                ctx.json(movimientos)
+                ctx.json("{\"message\": \"Success\", \"movimientos\": ${movimientos}}")
 
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.result("La cuenta con CVU ${cvu} no existe")
+                ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")
             }
         }
 
@@ -126,13 +126,13 @@ class DigitalWalletController(private val port: Int) {
             try{
                 service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
-                ctx.json("Borrado exitoso")
+                ctx.json("{\"message\": \"Borrado exitoso\"}")
             } catch (error: IllegalArgumentException) {
                 ctx.status(404)
-                ctx.result("No puede eliminar cuenta $cvu con fondos")
+                ctx.json("{\"message\": \"No puede eliminar cuenta $cvu con fondos\"}")
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.result("La cuenta con CVU ${cvu} no existe")
+                ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")
             }
         }
 
@@ -141,10 +141,10 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.json(Balance(balanceRecuperado!!))
+                ctx.json("{\"message\": \"Success\", \"balance\": ${Balance(balanceRecuperado!!)}}")
             } catch (error: NoSuchElementException){
                 ctx.status(404)
-                ctx.result("La cuenta con CVU ${cvu} no existe")
+                ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")
             }
         }
         return app
