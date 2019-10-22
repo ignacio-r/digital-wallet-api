@@ -52,9 +52,9 @@ class DigitalWalletController(private val port: Int) {
                 service.register(registerWrapper)
                 ctx.status(200)
                 ctx.result("Registro exitoso")
-            } catch (e: Error) {
+            } catch (e: IllegalArgumentException) {
                 ctx.status(500)
-                ctx.result("Error de registro. Por favor intente otra vez.")
+                ctx.result(e.message!!)
             }
         }
 
