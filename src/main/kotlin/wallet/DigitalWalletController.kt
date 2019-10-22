@@ -20,10 +20,6 @@ class DigitalWalletController(private val port: Int) {
                 ctx.status(500)
                 ctx.json("Error fatal")
             }
-            .exception(BadRequestResponse::class.java) { _, ctx ->
-                ctx.status(400)
-                ctx.result("Bad Request")
-            }
             .start(port)
 
         val service = DigitalWalletService()
