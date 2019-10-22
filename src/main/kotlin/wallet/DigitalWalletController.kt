@@ -74,6 +74,15 @@ class DigitalWalletController(private val port: Int) {
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
                 ctx.result("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos")
+            } catch (e: IllegalArgumentException) {
+                ctx.status(400)
+                ctx.result(e.message!!)
+            } catch (e: BlockedAccountException) {
+                ctx.status(400)
+                ctx.result(e.message!!)
+            } catch (e: NoMoneyException) {
+                ctx.status(400)
+                ctx.result(e.message!!)
             }
         }
 
@@ -93,6 +102,9 @@ class DigitalWalletController(private val port: Int) {
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
                 ctx.result("Cash In fallido. CVU incorrecto")
+            } catch (e: BlockedAccountException) {
+                ctx.status(400)
+                ctx.result(e.message!!)
             }
         }
 
@@ -105,7 +117,7 @@ class DigitalWalletController(private val port: Int) {
 
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.result("CVU incorrecto")
+                ctx.result("La cuenta con CVU ${cvu} no existe")
             }
         }
 
@@ -120,7 +132,7 @@ class DigitalWalletController(private val port: Int) {
                 ctx.result("No puede eliminar cuenta $cvu con fondos")
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.result("CVU incorrecto")
+                ctx.result("La cuenta con CVU ${cvu} no existe")
             }
         }
 
@@ -132,9 +144,8 @@ class DigitalWalletController(private val port: Int) {
                 ctx.json(Balance(balanceRecuperado!!))
             } catch (error: NoSuchElementException){
                 ctx.status(404)
-                ctx.result("CVU incorrecto")
+                ctx.result("La cuenta con CVU ${cvu} no existe")
             }
-
         }
         return app
     }
