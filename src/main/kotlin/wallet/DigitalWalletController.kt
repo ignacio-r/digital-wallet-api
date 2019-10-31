@@ -14,6 +14,7 @@ class DigitalWalletController(private val port: Int) {
 
     fun init(): Javalin {
         val app = Javalin.create {
+            it.enableCorsForAllOrigins()
         }
             .exception(Exception::class.java) { e, ctx ->
                 e.printStackTrace()
