@@ -142,7 +142,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Success\", \"balance\": ${Balance(balanceRecuperado!!)}}")
+                ctx.json("{\"message\": \"Success\", \"balance\": ${balanceRecuperado!!}}")
             } catch (error: NoSuchElementException){
                 ctx.status(404)
                 ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")
