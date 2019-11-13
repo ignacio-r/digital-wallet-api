@@ -148,6 +148,56 @@ class DigitalWalletController(private val port: Int) {
                 ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")
             }
         }
+
+        app.put("/users/firstname") { ctx ->
+            try {
+                val json = ctx.body<Map<String, String>>()
+                val cvu = json["cvu"]
+                val firstname = json["firstname"]
+                service.modificarNombreDeUsuario(cvu, firstname)
+                ctx.status(200)
+                ctx.json(APIResponse(message = "Modificacion exitosa"))
+            } catch (error: NoSuchElementException) {
+                ctx.status(404)
+                ctx.json(APIResponse(message = "No se pudo modificar el nombre"))
+            }
+        }
+
+        app.put("/users/lastname") { ctx ->
+            try {
+                val json = ctx.body<Map<String, String>>()
+                val cvu = json["cvu"]
+                val lastname = json["lastname"]
+                service.modificarApellidoDeUsuario(cvu, lastname)
+                ctx.status(200)
+                ctx.json(APIResponse(message = "Modificacion exitosa"))
+            } catch (error: NoSuchElementException) {
+                ctx.status(404)
+                ctx.json(APIResponse(message = "No se pudo modificar el nombre"))
+            }
+        }
+
+        app.get("/users/:cvu") { ctx ->
+            val cvu = ctx.pathParam("cvu")
+            try {
+                val user = service.digitalWallet.accountByCVU(cvu).user
+                ctx.status(200)
+                ctx.json(
+                    UserWrapper(
+                        idCard = user.idCard,
+                        email = user.email,
+                        firstName = user.firstName,
+                        lastName = user.lastName,
+                        isAdmin = user.isAdmin
+                    )
+                )
+            } catch (error: NoSuchElementException) {
+                ctx.status(404)
+                ctx.json(APIResponse(message = "CVU incorrecto"))
+            }
+        }
+
+
         return app
     }
 }

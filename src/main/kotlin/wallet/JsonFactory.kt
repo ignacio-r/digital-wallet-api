@@ -49,4 +49,25 @@ class JsonFactory {
             "password" to password
         )
     }
+
+    fun modifyUserLastName(
+        lastName: String,
+        cvu: String
+    ): JsonObject {
+        return jsonObject(
+            "lastname" to lastName,
+            "cvu" to cvu
+        )
+    }
+
+    fun modifyUserFirstName(
+        firstName: String,
+        cvu: String
+    ): JsonObject {
+        return jsonObject(
+            "firstname" to firstName,
+            "cvu" to cvu
+        )
+    }
+
 }

@@ -59,16 +59,16 @@ class DigitalWalletService {
         return account.balance
     }
 
+    fun modificarNombreDeUsuario(cvu: String?, firstname: String?) {
+        //TODO assert
+        digitalWallet.accountByCVU(cvu!!).user.firstName = firstname!!
+    }
+
+    fun modificarApellidoDeUsuario(cvu: String?, lastname: String?) {
+        //TODO assert
+        digitalWallet.accountByCVU(cvu!!).user.lastName = lastname!!
+    }
+
 }
-
-class Transaction(
-    val amount: Double,
-    val dateTime: String = "{}",
-    val description: String = "",
-    val fullDescription: String = "",
-    val isCashOut: Boolean
-)
-
-class Balance(val amount: Double)
 
 
