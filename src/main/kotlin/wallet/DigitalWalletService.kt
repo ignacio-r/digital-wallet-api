@@ -55,13 +55,8 @@ class DigitalWalletService {
     }
 
     fun balancePorCVU(cvu: String): Double? {
-        try {
-            val account: Account = digitalWallet.accountByCVU(cvu)
-            return account.balance
-        } catch (error: Error) {
-            print(error)
-        }
-        return null
+        val account: Account = digitalWallet.accountByCVU(cvu)
+        return account.balance
     }
 
     fun modificarNombreDeUsuario(cvu: String?, firstname: String?) {
