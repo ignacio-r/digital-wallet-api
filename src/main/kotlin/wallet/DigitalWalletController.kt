@@ -33,7 +33,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val login = service.login(loginWrapper)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Login exitoso para cuenta ${login.account!!.cvu}\"}, \"cvu\": \"${login.account!!.cvu}\" ")
+                ctx.json("{\"message\": \"Login exitoso para cuenta ${login.account!!.cvu}\", \"cvu\": \"${login.account!!.cvu}\"} ")
             } catch (e: LoginException) {
                 ctx.status(401)
                 ctx.json("{\"message\": \"Usuario o contraseña incorrectos\"}")
