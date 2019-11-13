@@ -324,5 +324,20 @@ class DigitalWalletApiTest {
         assertEquals(404, response.statusCode)
         assertEquals("CVU incorrecto", String(response.data))
     }
+
+/*
+    @Test
+    @Order(26)
+    fun `PUT users cvu modifica el nombre del user con ese cvu`(){
+        val modifyUserFirstNameJson: JsonObject = jsonFactory.modifyUserFirstName("Hello", "060065243")
+
+        val (_, putResponse, putResult) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
+        val (_, getResponse, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+
+        assertEquals("Modificacion exitosa", String(putResponse.data))
+        assertEquals("Hello", getResponse)
+    }
+*/
+
 }
 
