@@ -1,7 +1,6 @@
 package wallet
 
 import io.javalin.Javalin
-import io.javalin.http.BadRequestResponse
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -114,8 +113,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val movimientos = service.getMovimientos(cvu)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Success\", \"movimientos\": ${movimientos}}")
-
+                ctx.json(movimientos.toMutableList())
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
                 ctx.json("{\"message\": \"La cuenta con CVU ${cvu} no existe\"}")

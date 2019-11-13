@@ -37,14 +37,15 @@ class DigitalWalletService {
         digitalWallet.transferMoneyFromCard(cashInWrapper.fromCVU, card, cashInWrapper.amount.toDouble())
     }
 
-    fun getMovimientos(cvu: String): MutableList<Transaction> {
+    fun getMovimientos(cvu: String): MutableList<TransactionWrapper> {
         val account: Account = digitalWallet.accountByCVU(cvu)
         return account.transactions.map { transactional ->
-            Transaction(
+            TransactionWrapper(
                 amount = transactional.amount,
                 description = transactional.description(),
                 fullDescription = transactional.fullDescription(),
-                isCashOut = transactional.isCashOut()
+                isCashOut = transactional.isCashOut(),
+                dateTime = transactional.dateTime
             )
         }.toMutableList()
     }
