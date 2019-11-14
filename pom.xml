@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.github.unq-ui</groupId>
             <artifactId>digital-wallet</artifactId>
-            <version>1.2.6</version>
+            <version>1.2.7</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
