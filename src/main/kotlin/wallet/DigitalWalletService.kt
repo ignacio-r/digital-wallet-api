@@ -32,8 +32,13 @@ class DigitalWalletService {
     }
 
     fun cashin(cashInWrapper: CashInWrapper) {
-        val parsedDate = LocalDate.parse("01/${cashInWrapper.endDate}", DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-        val card = DebitCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
+        val parsedDate = LocalDate.parse(cashInWrapper.endDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        val card: Card
+        if (cashInWrapper.debitCard === "true") {
+            card = DebitCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
+        } else {
+            card = CreditCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
+        }
         digitalWallet.transferMoneyFromCard(cashInWrapper.fromCVU, card, cashInWrapper.amount.toDouble())
     }
 

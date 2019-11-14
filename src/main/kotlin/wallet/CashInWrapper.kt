@@ -7,4 +7,5 @@ class CashInWrapper {
     val fullName: String = ""
     val endDate: String = ""
     val securityCode: String = ""
+    val debitCard: String = ""
 }
