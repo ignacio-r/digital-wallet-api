@@ -63,7 +63,7 @@ class DigitalWalletController(private val port: Int) {
             val transferWrapper: TransferWrapper = ctx.bodyValidator<TransferWrapper>()
                 .check({ checkAllParams(it) })
                 .get()
-            if (transferWrapper.amount.toInt() <= 0) {
+            if (transferWrapper.amount.toDouble() <= 0) {
                 ctx.status(400)
                 ctx.json(MessageObject("Las transferencias tienen que tener un monto mayor a cero"))
                 return@post
