@@ -19,7 +19,7 @@ class DigitalWalletController(private val port: Int) {
             .exception(Exception::class.java) { e, ctx ->
                 e.printStackTrace()
                 ctx.status(500)
-                ctx.json("{\"message\": \"Error fatal\"}")
+                ctx.json(MessageObject("Error fatal"))
             }
             .start(port)
 
@@ -33,10 +33,10 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val login = service.login(loginWrapper)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Login exitoso para cuenta ${login.account!!.cvu}\", \"cvu\": \"${login.account!!.cvu}\"} ")
+                ctx.json(MessageObjectWithCVU("Login exitoso para cuenta ${login.account!!.cvu}", "${login.account!!.cvu}"))
             } catch (e: LoginException) {
                 ctx.status(401)
-                ctx.json("{\"message\": \"Usuario o contraseña incorrectos\"}")
+                ctx.json(MessageObject("Usuario o contraseña incorrectos"))
             }
         }
 
@@ -71,7 +71,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 service.transfer(transferWrapper)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Success\", \"cvu\": ${transferWrapper.fromCVU}}")
+                ctx.json(MessageObjectWithCVU("Success",  "${transferWrapper.fromCVU}"))
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
                 ctx.json(MessageObject("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos"))
@@ -141,7 +141,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.json("{\"message\": \"Success\", \"balance\": ${balanceRecuperado!!}}")
+                ctx.json(MessageObject(" ${balanceRecuperado!!}"))
             } catch (error: NoSuchElementException){
                 ctx.status(404)
                 ctx.json(MessageObject("La cuenta con CVU ${cvu} no existe"))
