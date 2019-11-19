@@ -3,7 +3,9 @@ package wallet
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.jackson.responseObject
+import com.github.salomonbrys.kotson.get
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import io.javalin.Javalin
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,7 +18,7 @@ class DigitalWalletApiTest {
 
     @BeforeAll
     fun setUp() {
-        api = DigitalWalletController(7000).init()
+        api = DigitalWalletController(7002).init()
         FuelManager.instance.basePath = "http://localhost:${api.port()}/"
         jsonFactory = JsonFactory()
     }
@@ -82,12 +84,18 @@ class DigitalWalletApiTest {
     @Order(6)
     fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_campos_vacios() {
         val json_obj: JsonObject =
-            jsonFactory.cashInJson("", "500.25", "1234 1234 1234 1234", "Facundo ", "07/2019", "123")
+            jsonFactory.cashInJson(
+                "", "500.25", "1234 1234 1234 1234",
+                "Facundo ", "07/2019", "123", "true"
+            )
 
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Request body as CashInWrapper invalid - Failed check", String(response.data))
+        assertEquals(
+            "Cash In fallido. Campos vacios",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -95,13 +103,13 @@ class DigitalWalletApiTest {
     fun se_retorna_400_si_se_intenta_realizar_un_cash_in_a_un_cvu_que_no_existe() {
         val json_obj: JsonObject = jsonFactory.cashInJson(
             "100000000", "500.25", "1234 1234 1234 1234", "Facundo ",
-            "07/2019", "123"
+            "07/2019", "123", "true"
         )
 
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Cash In fallido. CVU incorrecto", String(response.data))
+        assertEquals("Cash In fallido. CVU incorrecto", JsonParser().parse(String(response.data))["message"].asString)
     }
 
     @Test
@@ -109,13 +117,16 @@ class DigitalWalletApiTest {
     fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_un_monto_igual_a_0() {
         val json_obj: JsonObject = jsonFactory.cashInJson(
             "100000000", "0", "1234 1234 1234 1234",
-            "Facundo ", "07/2019", "123"
+            "Facundo ", "07/2019", "123", "true"
         )
 
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Cash In fallido. Chequee que el monto sea mayor a 0", String(response.data))
+        assertEquals(
+            "Cash In fallido. Chequee que el monto sea mayor a 0",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -123,13 +134,16 @@ class DigitalWalletApiTest {
     fun se_retorna_400_si_se_intenta_realizar_un_cash_in_con_un_monto_negativo() {
         val json_obj: JsonObject = jsonFactory.cashInJson(
             "100000000", "-10", "1234 1234 1234 1234",
-            "Facundo ", "07/2019", "123"
+            "Facundo ", "07/2019", "123", "true"
         )
 
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Cash In fallido. Chequee que el monto sea mayor a 0", String(response.data))
+        assertEquals(
+            "Cash In fallido. Chequee que el monto sea mayor a 0",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -137,13 +151,13 @@ class DigitalWalletApiTest {
     fun se_retorna_200_para_un_cash_in_exitoso() {
         val json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "10", "1234 1234 1234 1234",
-            "Facundo ", "07/2019", "123"
+            "Facundo ", "07/2019", "123", "true"
         )
 
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(200, response.statusCode)
-        assertEquals("Cash In exitoso", String(response.data))
+        assertEquals("Cash In exitoso", JsonParser().parse(String(response.data))["message"].asString)
     }
 
     @Test
@@ -155,7 +169,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
-            String(response.data)
+            JsonParser().parse(String(response.data))["message"].asString
         )
     }
 
@@ -171,7 +185,10 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Request body as TransferWrapper invalid - Failed check", String(response.data))
+        assertEquals(
+            "Cash out fallido. Campos vacios",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -188,7 +205,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
-            String(response.data)
+            JsonParser().parse(String(response.data))["message"].asString
         )
     }
 
@@ -204,7 +221,10 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Las transferencias tienen que tener un monto mayor a cero", String(response.data))
+        assertEquals(
+            "Las transferencias tienen que tener un monto mayor a cero",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -219,7 +239,10 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("transfer").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Las transferencias tienen que tener un monto mayor a cero", String(response.data))
+        assertEquals(
+            "Las transferencias tienen que tener un monto mayor a cero",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -227,7 +250,7 @@ class DigitalWalletApiTest {
     fun se_retorna_200_si_la_transferencia_es_exitosa() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "11",
-            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123", "true"
         )
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
 
@@ -254,17 +277,26 @@ class DigitalWalletApiTest {
 
         assertEquals(200, response.statusCode)
     }
+
     @Test
     @Order(19)
     fun se_retornan_una_lista_de_los_movimientos_de_una_cuenta() {
+        val json_obj: JsonObject = jsonFactory.cashInJson(
+            "060065243", "10", "1234 1234 1234 1234",
+            "Facundo ", "07/2019", "123", "true"
+        )
+
+        val (_, res, _) = Fuel.post("cashin").body(json_obj.toString()).response()
+        assertEquals(200, res.statusCode)
+
         val (_, _, result) = Fuel.get("transactions/060065243").responseObject<List<TransactionWrapper>>()
 
         val transaction = result.get()[0]
 
         assertEquals(transaction.amount, 10.0)
-        assertEquals(transaction.dateTime, "{}")
+        assertEquals(transaction.dateTime, "2019-11-20")
         assertEquals(transaction.description, "Carga con tarjeta")
-        assertEquals(transaction.fullDescription, "Carga con tarjeta xxxx xxxx xxxx , ,  de $10.0")
+        assertEquals(transaction.fullDescription, "Carga con tarjeta xxxx xxxx xxxx 1234 de $10.0")
         assertEquals(transaction.isCashOut, false)
     }
 
@@ -288,12 +320,15 @@ class DigitalWalletApiTest {
     fun deleteNoExitosoConCuentaConSaldoMayorACero() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "10",
-            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123", "true"
         )
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
         val (_, response, _) = Fuel.delete("users/060065243").response()
 
-        assertEquals("No puede eliminar cuenta 060065243 con fondos", String(response.data))
+        assertEquals(
+            "No puede eliminar cuenta 060065243 con fondos",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
     @Test
@@ -301,28 +336,36 @@ class DigitalWalletApiTest {
     fun deleteNoExitosoConCVUIncorrecto() {
         val cashin_json_obj: JsonObject = jsonFactory.cashInJson(
             "060065243", "10",
-            "1234 1234 1234 1234", "Facundo ", "07/2019", "123"
+            "1234 1234 1234 1234", "Facundo ", "07/2019", "123", "true"
         )
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
         val (_, response, _) = Fuel.delete("users/222").response()
 
-        assertEquals("La cuenta con CVU 222 no existe", String(response.data))
+        assertEquals("La cuenta con CVU 222 no existe", JsonParser().parse(String(response.data))["message"].asString)
     }
+
     @Test
     @Order(24)
-    fun error_404_al_momento_de_pedir_los_movientos_de_un_cvu_incorrecto(){
+    fun error_404_al_momento_de_pedir_los_movientos_de_un_cvu_incorrecto() {
         val (_, response, _) = Fuel.get("transactions/0800").responseObject<List<TransactionWrapper>>()
 
         assertEquals(404, response.statusCode)
-        assertEquals("La cuenta con CVU 0800 no existe", String(response.data))
+        assertEquals(
+            "La cuenta con CVU 0800 no existe",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
+
     @Test
     @Order(25)
     fun error_404_cvu_incorrecto_al_pedir_un_balance_de_un_cvu_incorrecto() {
         val (_, response, _) = Fuel.get("account/0800").response()
 
         assertEquals(404, response.statusCode)
-        assertEquals("La cuenta con CVU 0800 no existe", String(response.data))
+        assertEquals(
+            "La cuenta con CVU 0800 no existe",
+            JsonParser().parse(String(response.data))["message"].asString
+        )
     }
 
 /*
