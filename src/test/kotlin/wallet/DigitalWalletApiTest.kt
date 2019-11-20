@@ -2,6 +2,7 @@ package wallet
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.jackson.responseObject
 import com.github.salomonbrys.kotson.get
 import com.google.gson.JsonObject
@@ -94,7 +95,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Cash In fallido. Campos vacios",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -109,7 +110,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(400, response.statusCode)
-        assertEquals("Cash In fallido. CVU incorrecto", JsonParser().parse(String(response.data))["message"].asString)
+        assertEquals("Cash In fallido. CVU incorrecto", apiMessageFrom(response))
     }
 
     @Test
@@ -125,7 +126,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Cash In fallido. Chequee que el monto sea mayor a 0",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -142,7 +143,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Cash In fallido. Chequee que el monto sea mayor a 0",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -157,7 +158,7 @@ class DigitalWalletApiTest {
         val (_, response, _) = Fuel.post("cashin").body(json_obj.toString()).response()
 
         assertEquals(200, response.statusCode)
-        assertEquals("Cash In exitoso", JsonParser().parse(String(response.data))["message"].asString)
+        assertEquals("Cash In exitoso", apiMessageFrom(response))
     }
 
     @Test
@@ -169,7 +170,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -187,7 +188,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Cash out fallido. Campos vacios",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -205,7 +206,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -223,7 +224,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Las transferencias tienen que tener un monto mayor a cero",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -241,7 +242,7 @@ class DigitalWalletApiTest {
         assertEquals(400, response.statusCode)
         assertEquals(
             "Las transferencias tienen que tener un monto mayor a cero",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -327,7 +328,7 @@ class DigitalWalletApiTest {
 
         assertEquals(
             "No puede eliminar cuenta 060065243 con fondos",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -341,7 +342,7 @@ class DigitalWalletApiTest {
         Fuel.post("cashin").body(cashin_json_obj.toString()).response()
         val (_, response, _) = Fuel.delete("users/222").response()
 
-        assertEquals("La cuenta con CVU 222 no existe", JsonParser().parse(String(response.data))["message"].asString)
+        assertEquals("La cuenta con CVU 222 no existe", apiMessageFrom(response))
     }
 
     @Test
@@ -352,7 +353,7 @@ class DigitalWalletApiTest {
         assertEquals(404, response.statusCode)
         assertEquals(
             "La cuenta con CVU 0800 no existe",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
@@ -364,23 +365,62 @@ class DigitalWalletApiTest {
         assertEquals(404, response.statusCode)
         assertEquals(
             "La cuenta con CVU 0800 no existe",
-            JsonParser().parse(String(response.data))["message"].asString
+            apiMessageFrom(response)
         )
     }
 
-/*
     @Test
     @Order(26)
     fun `PUT users cvu modifica el nombre del user con ese cvu`(){
         val modifyUserFirstNameJson: JsonObject = jsonFactory.modifyUserFirstName("Hello", "060065243")
 
-        val (_, putResponse, putResult) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
-        val (_, getResponse, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+        val (_, putResponse, _) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
+        val (_, _, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
 
-        assertEquals("Modificacion exitosa", String(putResponse.data))
-        assertEquals("Hello", getResponse)
+        assertEquals("Modificacion exitosa", apiMessageFrom(putResponse))
+        assertEquals("Hello", getResult.get().firstName)
     }
-*/
+
+    @Test
+    @Order(27)
+    fun `PUT users cvu modifica el apellido del user con ese cvu`() {
+        val modifyUserLastNameJson: JsonObject = jsonFactory.modifyUserLastName("World", "060065243")
+
+        val (_, putResponse, _) = Fuel.put("users/lastname").body(modifyUserLastNameJson.toString()).response()
+        val (_, _, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+
+        assertEquals("Modificacion exitosa", apiMessageFrom(putResponse))
+        assertEquals("World", getResult.get().lastName)
+    }
+
+    @Test
+    @Order(28)
+    fun `PUT users cvu no modifica el apellido si es vacio`() {
+        val modifyUserLastNameJson: JsonObject = jsonFactory.modifyUserLastName("", "060065243")
+
+        val (_, putResponse, _) = Fuel.put("users/lastname").body(modifyUserLastNameJson.toString()).response()
+        val (_, _, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+
+        assertEquals(404, putResponse.statusCode)
+        assertEquals("Cannot be empty fields", apiMessageFrom(putResponse))
+        assertEquals("a", getResult.get().lastName)
+    }
+
+    @Test
+    @Order(28)
+    fun `PUT users cvu no modifica el nombre si es vacio`() {
+        val modifyUserFirstNameJson: JsonObject = jsonFactory.modifyUserFirstName("", "060065243")
+
+        val (_, putResponse, _) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
+        val (_, _, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+
+        assertEquals(404, putResponse.statusCode)
+        assertEquals("Cannot be empty fields", apiMessageFrom(putResponse))
+        assertEquals("a", getResult.get().firstName)
+    }
+
+    private fun apiMessageFrom(res: Response) = JsonParser().parse(String(res.data))["message"].asString
+
 
 }
 

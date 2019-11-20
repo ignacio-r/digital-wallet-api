@@ -48,13 +48,12 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("register") { ctx ->
-            val registerWrapper: RegisterWrapper
-            registerWrapper = ctx.bodyValidator<RegisterWrapper>()
+            val registerWrapper: RegisterWrapper = ctx.bodyValidator<RegisterWrapper>()
                 .check({ it.email.contains("@") && it.email.contains(".com") }, "Email invalido")
-                .check({ it.password.trim().length > 0 }, "Contraseña corta")
-                .check({ it.idCard.trim().length > 0 }, "ID Card invalido")
-                .check({ it.firstName.trim().length > 0 }, "Primer nombre invalido")
-                .check({ it.lastName.trim().length > 0 }, "Apellido invalido")
+                .check({ it.password.trim().isNotEmpty() }, "Contraseña corta")
+                .check({ it.idCard.trim().isNotEmpty() }, "ID Card invalido")
+                .check({ it.firstName.trim().isNotEmpty() }, "Primer nombre invalido")
+                .check({ it.lastName.trim().isNotEmpty() }, "Apellido invalido")
                 .get()
             try {
                 service.register(registerWrapper)
@@ -154,7 +153,7 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.json(APIResponse(" ${balanceRecuperado!!}"))
+                ctx.json(Balance(balanceRecuperado!!))
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
                 ctx.json(APIResponse("La cuenta con CVU ${cvu} no existe"))
@@ -172,7 +171,11 @@ class DigitalWalletController(private val port: Int) {
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
                 ctx.json(APIResponse(message = "No se pudo modificar el nombre"))
+            } catch (e: EmptyValueException) {
+                ctx.status(404)
+                ctx.json(APIResponse(e.message))
             }
+
         }
 
         app.put("/users/lastname") { ctx ->
@@ -186,6 +189,9 @@ class DigitalWalletController(private val port: Int) {
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
                 ctx.json(APIResponse(message = "No se pudo modificar el nombre"))
+            } catch (e: EmptyValueException) {
+                ctx.status(404)
+                ctx.json(APIResponse(e.message))
             }
         }
 

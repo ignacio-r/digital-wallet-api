@@ -68,12 +68,20 @@ class DigitalWalletService {
     }
 
     fun modificarNombreDeUsuario(cvu: String?, firstname: String?) {
-        //TODO assert
+        val string = firstname.toString()
+        assertNotEmpty(string)
         digitalWallet.accountByCVU(cvu!!).user.firstName = firstname!!
     }
 
+    private fun assertNotEmpty(string: String) {
+        if (string.isEmpty()) {
+            throw EmptyValueException()
+        }
+    }
+
     fun modificarApellidoDeUsuario(cvu: String?, lastname: String?) {
-        //TODO assert
+        val string = lastname.toString()
+        assertNotEmpty(string)
         digitalWallet.accountByCVU(cvu!!).user.lastName = lastname!!
     }
 
