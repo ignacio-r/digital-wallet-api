@@ -48,13 +48,12 @@ class DigitalWalletController(private val port: Int) {
         }
 
         app.post("register") { ctx ->
-            val registerWrapper: RegisterWrapper
-            registerWrapper = ctx.bodyValidator<RegisterWrapper>()
+            val registerWrapper: RegisterWrapper = ctx.bodyValidator<RegisterWrapper>()
                 .check({ it.email.contains("@") && it.email.contains(".com") }, "Email invalido")
-                .check({ it.password.trim().length > 0 }, "Contraseña corta")
-                .check({ it.idCard.trim().length > 0 }, "ID Card invalido")
-                .check({ it.firstName.trim().length > 0 }, "Primer nombre invalido")
-                .check({ it.lastName.trim().length > 0 }, "Apellido invalido")
+                .check({ it.password.trim().isNotEmpty() }, "Contraseña corta")
+                .check({ it.idCard.trim().isNotEmpty() }, "ID Card invalido")
+                .check({ it.firstName.trim().isNotEmpty() }, "Primer nombre invalido")
+                .check({ it.lastName.trim().isNotEmpty() }, "Apellido invalido")
                 .get()
             try {
                 service.register(registerWrapper)
