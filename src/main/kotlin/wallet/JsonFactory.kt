@@ -14,7 +14,7 @@ class JsonFactory {
 
     fun cashInJson(
         fromCVU: String, amount: String, cardNumber: String, fullname: String,
-        endDate: String, securityCode: String
+        endDate: String, securityCode: String, debitCard: String
     ): JsonObject {
         return jsonObject(
             "fromCVU" to fromCVU,
@@ -22,7 +22,8 @@ class JsonFactory {
             "cardNumber" to cardNumber,
             "fullName" to fullname,
             "endDate" to endDate,
-            "securityCode" to securityCode
+            "securityCode" to securityCode,
+            "debitCard" to debitCard
         )
     }
 

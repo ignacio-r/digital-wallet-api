@@ -1,15 +1,17 @@
 package wallet
 
-import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.toMap
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import io.javalin.Javalin
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
+import java.util.*
+
 
 class DigitalWalletController(private val port: Int) {
 
-    fun checkAllParams(asd: Any): Boolean {
-        val props = asd::class.memberProperties as List<KProperty1<Any, *>>
-        return props.all { prop -> prop.get(asd).toString().trim() != "" }
+    private fun checkParamIsEmpty(any: String): Boolean {
+        return (JsonParser().parse(any) as JsonObject)
+            .toMap().values.stream().anyMatch { e -> e.asString == "" }
     }
 
     fun init(): Javalin {
@@ -19,7 +21,7 @@ class DigitalWalletController(private val port: Int) {
             .exception(Exception::class.java) { e, ctx ->
                 e.printStackTrace()
                 ctx.status(500)
-                ctx.json(MessageObject("Error fatal"))
+                ctx.json(APIResponse("Error fatal"))
             }
             .start(port)
 
@@ -33,10 +35,15 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val login = service.login(loginWrapper)
                 ctx.status(200)
-                ctx.json(MessageObjectWithCVU("Login exitoso para cuenta ${login.account!!.cvu}", "${login.account!!.cvu}"))
+                ctx.json(
+                    APIResponseWithCVU(
+                        "Login exitoso para cuenta ${login.account!!.cvu}",
+                        "${login.account!!.cvu}"
+                    )
+                )
             } catch (e: LoginException) {
                 ctx.status(401)
-                ctx.json(MessageObject("Usuario o contraseña incorrectos"))
+                ctx.json(APIResponse("Usuario o contraseña incorrectos"))
             }
         }
 
@@ -52,60 +59,66 @@ class DigitalWalletController(private val port: Int) {
             try {
                 service.register(registerWrapper)
                 ctx.status(200)
-                ctx.json(MessageObject("Registro exitoso"))
+                ctx.json(APIResponse("Registro exitoso"))
             } catch (e: IllegalArgumentException) {
                 ctx.status(500)
-                ctx.json(MessageObject(e.message!!))
+                ctx.json(APIResponse(e.message!!))
             }
         }
 
         app.post("transfer") { ctx ->
-            val transferWrapper: TransferWrapper = ctx.bodyValidator<TransferWrapper>()
-                .check({ checkAllParams(it) })
-                .get()
-            if (transferWrapper.amount.toDouble() <= 0) {
+            if (checkParamIsEmpty(ctx.body())) {
                 ctx.status(400)
-                ctx.json(MessageObject("Las transferencias tienen que tener un monto mayor a cero"))
+                ctx.json(APIResponse("Cash out fallido. Campos vacios"))
+                return@post
+            }
+            val transferWrapper: TransferWrapper = ctx.bodyValidator<TransferWrapper>().get()
+            if (transferWrapper.amount.toInt() <= 0) {
+                ctx.status(400)
+                ctx.json(APIResponse("Las transferencias tienen que tener un monto mayor a cero"))
                 return@post
             }
             try {
                 service.transfer(transferWrapper)
                 ctx.status(200)
-                ctx.json(MessageObjectWithCVU("Success",  "${transferWrapper.fromCVU}"))
+                ctx.json(APIResponseWithCVU("Success", "${transferWrapper.fromCVU}"))
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
-                ctx.json(MessageObject("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos"))
+                ctx.json(APIResponse("Transferencia fallida, chequear que el CVU destinatario o emisor sean correctos"))
             } catch (e: IllegalArgumentException) {
                 ctx.status(400)
-                ctx.json(MessageObject(e.message!!))
+                ctx.json(APIResponse(e.message!!))
             } catch (e: BlockedAccountException) {
                 ctx.status(400)
-                ctx.json(MessageObject(e.message!!))
+                ctx.json(APIResponse(e.message!!))
             } catch (e: NoMoneyException) {
                 ctx.status(400)
-                ctx.json(MessageObject(e.message!!))
+                ctx.json(APIResponse(e.message!!))
             }
         }
 
         app.post("cashin") { ctx ->
-            val cashInWrapper: CashInWrapper = ctx.bodyValidator<CashInWrapper>()
-                .check({ checkAllParams(it) })
-                .get()
+            if (checkParamIsEmpty(ctx.body())) {
+                ctx.status(400)
+                ctx.json(APIResponse("Cash In fallido. Campos vacios"))
+                return@post
+            }
+            val cashInWrapper: CashInWrapper = ctx.bodyValidator<CashInWrapper>().get()
             if (cashInWrapper.amount.toDouble() <= 0) {
                 ctx.status(400)
-                ctx.json(MessageObject("Cash In fallido. Chequee que el monto sea mayor a 0"))
+                ctx.json(APIResponse("Cash In fallido. Chequee que el monto sea mayor a 0"))
                 return@post
             }
             try {
                 service.cashin(cashInWrapper)
                 ctx.status(200)
-                ctx.json(MessageObject("Cash In exitoso"))
+                ctx.json(APIResponse("Cash In exitoso"))
             } catch (e: NoSuchElementException) {
                 ctx.status(400)
-                ctx.json(MessageObject("Cash In fallido. CVU incorrecto"))
+                ctx.json(APIResponse("Cash In fallido. CVU incorrecto"))
             } catch (e: BlockedAccountException) {
                 ctx.status(400)
-                ctx.json(MessageObject(e.message!!))
+                ctx.json(APIResponse(e.message!!))
             }
         }
 
@@ -117,22 +130,22 @@ class DigitalWalletController(private val port: Int) {
                 ctx.json(movimientos.toMutableList())
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.json(MessageObject("La cuenta con CVU ${cvu} no existe"))
+                ctx.json(APIResponse("La cuenta con CVU ${cvu} no existe"))
             }
         }
 
         app.delete("/users/:cvu") { ctx ->
             val cvu = ctx.pathParam("cvu")
-            try{
+            try {
                 service.borrarUsuarioPorCVU(cvu)
                 ctx.status(200)
-                ctx.json(MessageObject("Borrado exitoso"))
+                ctx.json(APIResponse("Borrado exitoso"))
             } catch (error: IllegalArgumentException) {
                 ctx.status(404)
-                ctx.json(MessageObject("No puede eliminar cuenta $cvu con fondos"))
+                ctx.json(APIResponse("No puede eliminar cuenta $cvu con fondos"))
             } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.json(MessageObject("La cuenta con CVU ${cvu} no existe"))
+                ctx.json(APIResponse("La cuenta con CVU ${cvu} no existe"))
             }
         }
 
@@ -141,10 +154,10 @@ class DigitalWalletController(private val port: Int) {
             try {
                 val balanceRecuperado = service.balancePorCVU(cvu)
                 ctx.status(200)
-                ctx.json(MessageObject(" ${balanceRecuperado!!}"))
-            } catch (error: NoSuchElementException){
+                ctx.json(APIResponse(" ${balanceRecuperado!!}"))
+            } catch (error: NoSuchElementException) {
                 ctx.status(404)
-                ctx.json(MessageObject("La cuenta con CVU ${cvu} no existe"))
+                ctx.json(APIResponse("La cuenta con CVU ${cvu} no existe"))
             }
         }
 
@@ -199,6 +212,7 @@ class DigitalWalletController(private val port: Int) {
 
         return app
     }
+
 }
 
 

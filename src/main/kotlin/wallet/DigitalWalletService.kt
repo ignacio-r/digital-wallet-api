@@ -1,8 +1,8 @@
 package wallet
-
 import data.DigitalWalletData
-import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+
 
 class DigitalWalletService {
     val digitalWallet = DigitalWalletData.build()
@@ -32,7 +32,8 @@ class DigitalWalletService {
     }
 
     fun cashin(cashInWrapper: CashInWrapper) {
-        val parsedDate = LocalDate.parse(cashInWrapper.endDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        val parsedDate = YearMonth.parse(cashInWrapper.endDate, DateTimeFormatter.ofPattern("MM/yyyy")).atDay(1)
+
         val card: Card
         if (cashInWrapper.debitCard === "true") {
             card = DebitCard(cashInWrapper.cardNumber, cashInWrapper.fullName, parsedDate, cashInWrapper.securityCode)
@@ -43,16 +44,17 @@ class DigitalWalletService {
     }
 
     fun getMovimientos(cvu: String): MutableList<TransactionWrapper> {
+
         val account: Account = digitalWallet.accountByCVU(cvu)
-        return account.transactions.map { transactional ->
+        return (account.transactions.map { transactional ->
             TransactionWrapper(
                 amount = transactional.amount,
                 description = transactional.description(),
                 fullDescription = transactional.fullDescription(),
                 isCashOut = transactional.isCashOut(),
-                dateTime = transactional.dateTime
+                dateTime = transactional.dateTime.toLocalDate().toString()
             )
-        }.toMutableList()
+        }.toMutableList()) //account.transactions[0].dateTime
     }
 
     fun borrarUsuarioPorCVU(cvu: String) {
