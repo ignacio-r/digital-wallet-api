@@ -377,8 +377,8 @@ class DigitalWalletApiTest {
         val (_, putResponse, putResult) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
         val (_, getResponse, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
 
-        assertEquals("Modificacion exitosa", String(putResponse.data))
-        assertEquals("Hello", getResponse)
+        assertEquals("Modificacion exitosa", apiMessageFrom(putResponse))
+        assertEquals("Hello", getResult.get().firstName)
     }
 
     @Test
