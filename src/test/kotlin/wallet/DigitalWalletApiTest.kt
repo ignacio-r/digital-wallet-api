@@ -374,11 +374,11 @@ class DigitalWalletApiTest {
     fun `PUT users cvu modifica el nombre del user con ese cvu`(){
         val modifyUserFirstNameJson: JsonObject = jsonFactory.modifyUserFirstName("Hello", "060065243")
 
-        val (_, putResponse, _) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
-        val (_, _, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
+        val (_, putResponse, putResult) = Fuel.put("users/firstname").body(modifyUserFirstNameJson.toString()).response()
+        val (_, getResponse, getResult) = Fuel.get("users/060065243").responseObject<UserWrapper>()
 
-        assertEquals("Modificacion exitosa", apiMessageFrom(putResponse))
-        assertEquals("Hello", getResult.get().firstName)
+        assertEquals("Modificacion exitosa", String(putResponse.data))
+        assertEquals("Hello", getResponse)
     }
 
     @Test
@@ -407,7 +407,7 @@ class DigitalWalletApiTest {
     }
 
     @Test
-    @Order(28)
+    @Order(29)
     fun `PUT users cvu no modifica el nombre si es vacio`() {
         val modifyUserFirstNameJson: JsonObject = jsonFactory.modifyUserFirstName("", "060065243")
 
